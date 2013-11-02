@@ -1,0 +1,6 @@
+[user]
+username:fake@gmail.com
+password:your-password-here
+
+[player]
+mplayer:mplayer
