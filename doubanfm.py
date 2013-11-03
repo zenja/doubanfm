@@ -83,18 +83,20 @@ class MusicPlayer:
         self.doubanfm = doubanfm
         self.command = doubanfm.config_parser.get('player', 'mplayer')
         self.player_process = None
+        self.volume = 100
 
     def play_next_song(self):
         self.stop()
         cmd = [self.command, '-slave', '-quiet', self.doubanfm.get_next_song()['url']]
         self.player_process = subprocess.Popen(cmd, stdout = subprocess.PIPE, stdin = subprocess.PIPE)
+        self.change_volume(self.volume)
         # start monitoring thread
         self.monitor_thread = threading.Thread(target = self.monitor_thread_run)
         self.monitor_thread.start()
 
     def monitor_thread_run(self):
         # wait for the mplayer process to finish
-        self.player_process.communicate()
+        self.player_process.communicate(input=self.player_process.stdin)
         # notify the player to play the next song
         # if the previous song finished without interruption
         if self.player_process.returncode == 0:
@@ -105,6 +107,10 @@ class MusicPlayer:
             self.player_process.terminate()
         except:
             pass
+
+    def change_volume(self, volume):
+        self.volume = volume
+        self.player_process.stdin.write("volume {} 1\n".format(volume))
 
     def get_current_song(self):
         return self.doubanfm.get_current_song()

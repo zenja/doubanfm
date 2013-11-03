@@ -23,6 +23,14 @@ def stop():
     player.stop()
     return 'Player should be stopped now'
 
+@app.route('/api/v1/change_volume/<int:volume>')
+def change_volume(volume):
+    if 1 <= volume <= 100:
+        player.change_volume(volume)
+        return "Current volume: {0}".format(player.volume)
+    else:
+        return "Volume should between 1 and 100 (inclusive)"
+
 @app.route('/api/v1/info')
 def info():
     if doubanfm.current_song:
@@ -41,4 +49,4 @@ def change_channel(channel_id):
     return 'current channel: {0}'.format(doubanfm.current_channel)
 
 if __name__ == "__main__":
-    app.run(host = '0.0.0.0', debug = True)
+    app.run(host='0.0.0.0', debug=True)
