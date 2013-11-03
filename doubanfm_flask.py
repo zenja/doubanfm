@@ -41,4 +41,4 @@ def change_channel(channel_id):
     return 'current channel: {0}'.format(doubanfm.current_channel)
 
 if __name__ == "__main__":
-    app.run(debug = True)
+    app.run(host = '0.0.0.0', debug = True)
