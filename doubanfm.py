@@ -108,10 +108,3 @@ class MusicPlayer:
 
     def get_current_song(self):
         return self.doubanfm.get_current_song()
-
-if __name__ == '__main__':
-    doubanfm = DoubanFM()
-    #print doubanfm.get_channels()
-    #print doubanfm._get_songs(0)
-    player = MusicPlayer(doubanfm)
-    player.play_next_song()
