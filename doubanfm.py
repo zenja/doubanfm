@@ -1,6 +1,7 @@
 import requests
 import subprocess
 import threading
+import Queue
 from ConfigParser import SafeConfigParser
 
 class LoginException(Exception):
@@ -84,15 +85,19 @@ class MusicPlayer:
         self.command = doubanfm.config_parser.get('player', 'mplayer')
         self.player_process = None
         self.volume = 100
+        self.status_update_queue = Queue.Queue()
 
     def play_next_song(self):
         self.stop()
         cmd = [self.command, '-slave', '-quiet', self.doubanfm.get_next_song()['url']]
         self.player_process = subprocess.Popen(cmd, stdout = subprocess.PIPE, stdin = subprocess.PIPE)
-        self.change_volume(self.volume)
         # start monitoring thread
         self.monitor_thread = threading.Thread(target = self.monitor_thread_run)
         self.monitor_thread.start()
+        # set volume to current volume
+        self.change_volume(self.volume, notify=False)
+        # notify that current status of the player has changed
+        self.on_status_changed()
 
     def monitor_thread_run(self):
         # wait for the mplayer process to finish
@@ -108,9 +113,21 @@ class MusicPlayer:
         except:
             pass
 
-    def change_volume(self, volume):
+    def change_volume(self, volume, notify=True):
         self.volume = volume
         self.player_process.stdin.write("volume {} 1\n".format(volume))
+        if notify:
+            # notify that current status of the player has changed
+            self.on_status_changed()
 
     def get_current_song(self):
         return self.doubanfm.get_current_song()
+
+    def get_status_update(self):
+        return self.status_update_queue.get()
+
+    def on_status_changed(self):
+        current_status = {}
+        current_status['volume'] = self.volume
+        current_status['song'] = self.get_current_song()
+        self.status_update_queue.put(current_status)
